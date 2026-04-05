@@ -15,6 +15,7 @@ export const environment = {
   baseURL,
   apiURL: `${baseURL}api`,
   localization: localizationEnum.RO,
+  // NOTE: These keys are intentionally committed. Frontend keys are always visible in the built bundle
   googleAPIKey: "AIzaSyBxpjor5tThzdeEUyRUl-rTQ2EX2zJY7HY",
   cloudinary: {
     cloudinaryApiKey: "275396168659691",

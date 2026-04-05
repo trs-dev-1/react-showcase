@@ -77,6 +77,22 @@ npm run pull-translations  # Sync i18n translations from i18nexus
 
 ---
 
+## Key Technical Decisions
+
+A few decisions worth calling out for anyone reviewing the architecture:
+
+- **Custom ESLint rule for domain isolation** (`eslint-rules/no-domain-deep-imports`) — domain boundaries are enforced at lint time, not just by convention. No domain can import another domain's internals; all cross-domain shared code must go through `src/shared/`. This makes refactoring domain internals safe.
+
+- **Compile-time RBAC** — the permission system in `src/domains/auth/hooks/use-permissions.ts` uses TypeScript discriminated unions to map roles → resources → actions. Invalid combinations are a type error, not a runtime bug.
+
+- **Race-condition-safe token refresh** — the Axios interceptor in `src/shared/services/lib/axios.ts` uses a double-checked locking pattern to ensure concurrent 401 responses trigger only one token refresh, with all queued requests replayed after resolution.
+
+- **Socket-first with polling fallback** — React Query's `refetchInterval` is a function that checks socket connection state. When the socket is live it returns `false` (no polling); when disconnected it falls back to a 30-second poll automatically.
+
+- **State layer separation** — Zustand handles client/UI state (theme, language, modals) with localStorage persistence. React Query owns all server state. The two layers do not overlap.
+
+---
+
 ## Architecture Notes
 
 ### API Proxies (dev)
@@ -120,5 +136,5 @@ Prettier config (`prettier.config.json`): `semi: true`, `singleQuote: true`, `tr
 
 ## Notes
 
-- No test framework is currently configured.
+- No test framework is configured. Tests were intentionally deferred — the product was evolving rapidly and writing tests against frequently changing requirements would have meant constant rewrites. The plan was to introduce a test suite once the application stabilized and core flows were locked in.
 - The `server/` directory contains a minimal Express server for serving the production build.
